@@ -3,40 +3,41 @@ import { db } from "../db/index.js";
 import { projectsTable } from "../models/project.models.js";
 
 export async function addNewProject(req, res) {
-  const { name, description } = req.body;
+  const { title, description, startDate } = req.body;
 
-  if (!name || !description) {
+  if (!title || !description) {
     return res.status(400).json({
-      error: "Please provide both name and description of the Project.",
+      error: "Please provide both title and description of the Project.",
     });
   }
 
   const [existing] = await db
     .select()
     .from(projectsTable)
-    .where((table) => eq(table.name, name));
+    .where(eq(projectsTable.title, title));
 
   if (existing) {
     return res
       .status(400)
-      .json({ error: `Project with name: ${name} already exists.` });
+      .json({ error: `Project with title: ${title} already exists.` });
   }
 
-  const projectId = await db.insert(projectsTable).values({
-    name: name,
+  const [newProject] = await db.insert(projectsTable).values({
+    title: title,
     description: description,
-  });
+    startDate: startDate ?? new Date().toISOString(),
+  }).returning({ projectId: projectsTable.projectId });
 
   return res
     .status(201)
-    .json({ success: `Project ${name} is added succesfully!` });
-}
+    .json({ success: `Project ${title} is added succesfully!`, projectId: newProject.projectId });
+  }
 
 export async function getAllProjects(req, res) {
   const data = await db
     .select({
       projectId: projectsTable.projectId,
-      name: projectsTable.name,
+      title: projectsTable.title,
       description: projectsTable.description,
     })
     .from(projectsTable);
@@ -55,11 +56,11 @@ export async function getProjectById(req, res) {
     const project = await db
       .select({
         projectId: projectsTable.projectId,
-        name: projectsTable.name,
+        title: projectsTable.title,
         description: projectsTable.description,
       })
       .from(projectsTable)
-      .where((table) => eq(table.projectId, id));
+      .where(eq(projectsTable.projectId, id));
 
     if (project.length === 0) {
       return res

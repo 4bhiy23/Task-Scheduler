@@ -12,7 +12,7 @@ export async function addNewUser(req,res){
 
     const [existing] = await db.select({
         email: usersTable.email
-    }).from(usersTable).where(table => eq(table.email, email))
+    }).from(usersTable).where(eq(usersTable.email, email))
 
     if(existing){
         return res.status(400).json({error:`User with email: ${email} already exists.`})
@@ -45,7 +45,7 @@ export async function loginUser(req,res){
         email: usersTable.email,
         password: usersTable.password,
         salt: usersTable.salt
-    }).from(usersTable).where(table => eq(table.email, email))
+    }).from(usersTable).where(eq(usersTable.email, email))
 
     if(!existing){
         return res.status(404).json({error:`User with email: ${email} doesn't exists.`})
@@ -67,11 +67,11 @@ export async function getUserInfo(req,res){
     const id = req.params.id;
 
     const [user] = await db.select({
-        id: usersTable.id,
+        id: usersTable.userId,
         name: usersTable.name,
         email: usersTable.email,
         project: usersTable.project
-    }).from(usersTable).where(table => eq(table.id, id))
+    }).from(usersTable).where(eq(usersTable.userId, id))
 
     if(!user){
         return res.status(404).json({error:`User with id: ${id} doesn't exists.`})
