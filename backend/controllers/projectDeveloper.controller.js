@@ -118,7 +118,6 @@ export async function getUserProjects(req, res) {
       .where(eq(projectDevelopers.userId, userId));
 
       if (projects.length === 0) {
-           // Optional: Check if user exists
         const [user] = await db.select().from(usersTable).where(eq(usersTable.userId, userId));
         if(!user) return res.status(404).json({ error: "User not found." });
 

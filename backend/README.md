@@ -263,6 +263,72 @@ List all projects assigned to a specific user.
 
 ---
 
+## Task Routes
+
+### 1. Add Task to Project
+Create a new task and assign it to a project.
+
+- **Endpoint:** `/api/task`
+- **Method:** `POST`
+- **Request Body:**
+  ```json
+  {
+    "projectId": "123e4567-e89b-12d3-a456-426614174000",
+    "title": "Design Database Schema",
+    "description": "Create ERD and initial schema migration.",
+    "status": "todo" 
+  }
+  ```
+  *(Note: `status` is optional; defaults to 'todo'. `description` is optional.)*
+- **Success Response (201):**
+  ```json
+  {
+    "success": true,
+    "message": "Task added successfully",
+    "task": {
+      "taskId": "8a697ab9-ad51-4e00-aa8f-e68b7d0542a4",
+      "projectId": "123e4567-e89b-12d3-a456-426614174000",
+      "title": "Design Database Schema",
+      "description": "Create ERD and initial schema migration.",
+      "status": "todo",
+      "createdAt": "2026-02-19T06:29:37.284Z"
+    }
+  }
+  ```
+- **Error Response (400/404):**
+  ```json
+  {
+    "error": "Project with id: ... not found."
+  }
+  ```
+
+### 2. Get Tasks by Project
+Retrieve all tasks associated with a specific project.
+
+- **Endpoint:** `/api/task/project/:projectId`
+- **Method:** `GET`
+- **Success Response (200):**
+  ```json
+  [
+    {
+      "taskId": "8a697ab9-ad51-4e00-aa8f-e68b7d0542a4",
+      "projectId": "123e4567-e89b-12d3-a456-426614174000",
+      "title": "Design Database Schema",
+      "description": "Create ERD and initial schema migration.",
+      "status": "todo",
+      "createdAt": "2026-02-19T06:29:37.284Z"
+    }
+  ]
+  ```
+- **Error Response (500):**
+  ```json
+  {
+    "error": "Failed to fetch tasks"
+  }
+  ```
+
+---
+
 ## Database Models (Reference)
 
 ### Users Table
@@ -285,3 +351,11 @@ List all projects assigned to a specific user.
 ### Project Developers Table (Junction)
 - `projectId` (UUID, FK)
 - `userId` (UUID, FK)
+
+### Tasks Table
+- `taskId` (UUID, PK)
+- `projectId` (UUID, FK -> Projects)
+- `title` (String)
+- `description` (Text, Optional)
+- `status` (Enum: 'todo', 'in-progress', 'done')
+- `createdAt` (Timestamp)
