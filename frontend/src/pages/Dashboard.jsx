@@ -10,7 +10,7 @@ const Dashboard = () => {
     const fetchProjects = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/v1/projects",
+          `${import.meta.env.VITE_BACKEND_URL}/projects`,
         );
         setProjects(response.data);
         console.log(response.data);

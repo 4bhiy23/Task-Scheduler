@@ -13,7 +13,7 @@ const CreateProject = () => {
   const onSubmit = async (data) => {
     // console.log(data);
     try{
-      const response = await axios.post("http://localhost:3000/api/v1/projects", data)
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/projects`, data)
       console.log(response.data)
       console.log("Project Created Successfully ^_^")
     } catch(err){

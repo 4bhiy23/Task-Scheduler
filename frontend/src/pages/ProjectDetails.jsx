@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, use } from "react";
 import { Circle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const formatToLocalDate = (dateInput) => {
   if (!dateInput) return "N/A";
@@ -19,14 +20,26 @@ const ProjectDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { project } = location.state ?? {};
-  // console.log(project)
+  // console.log(project);
 
   // Milestones State
-  const [milestones, setMilestones] = useState([]);
+  const [milestones, setMilestones] = useState([])
   const [creatingMilestone, setCreatingMilestone] = useState(false);
   const [newMilestoneTitle, setNewMilestoneTitle] = useState("");
   const inputRef = useRef(null);
-
+  
+  useEffect(()=>{
+    const fetchData = async () => {
+     try{
+       const data = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/projects/${project._id}`)
+       setMilestones(data.data.milestones)
+     }catch(err){
+       console.log("Terin ma ka bhosda",err)
+     }
+   }
+    fetchData()
+  },[])
+  
   // Focus when input appears
   useEffect(() => {
     if (creatingMilestone) {
@@ -35,9 +48,15 @@ const ProjectDetails = () => {
   }, [creatingMilestone]);
 
   // Create milestone on Enter
-  const handleCreateMilestone = () => {
+  const handleCreateMilestone = async () => {
     if (!newMilestoneTitle.trim()) return;
-
+    const mile = await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/projects/${project._id}/milestone`,
+      {
+        title: newMilestoneTitle,
+      },
+    );
+    console.log(mile.data.milestones)
     setMilestones((prev) => [
       ...prev,
       {
@@ -46,13 +65,18 @@ const ProjectDetails = () => {
         tasks: [],
       },
     ]);
-
     setNewMilestoneTitle("");
     setCreatingMilestone(false);
+    console.log(project);
   };
+
+  
+
+ 
 
   // Add task with focus
   const [creatingTasks, setCreatingTasks] = useState(false);
+  const [activeMilestoneId, setActiveMilestoneId] = useState(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const taskInputRef = useRef(null);
 
@@ -63,31 +87,39 @@ const ProjectDetails = () => {
   }, [creatingTasks]);
 
   // Add Task Logic
-  const handleCreateTask = (milestoneId) => {
-  if (!newTaskTitle.trim()) return;
+  // const handleCreateTask = async (milestoneId) => {
+  //   if (!newTaskTitle.trim()) return;
 
-  setMilestones((prev) =>
-    prev.map((m) =>
-      m.id === milestoneId
-        ? {
-            ...m,
-            tasks: [
-              ...m.tasks,
-              {
-                id: crypto.randomUUID(),
-                title: newTaskTitle,
-                assignedTo: "Ramlal",
-                isCompleted: false
-              },
-            ],
-          }
-        : m
-    )
-  );
+  //   await axios.post(
+  //     `${import.meta.env.VITE_BACKEND_URL}/projects/${project._id}/milestone/${milestoneId}/task`,
+  //     {
+  //       title: newTaskTitle,
+  //       assignedTo: "userId",
+  //     },
+  //   );
 
-  setNewTaskTitle("");
-  setCreatingTasks(false);
-};
+  //   setMilestones((prev) =>
+  //     prev.map((m) =>
+  //       m.id === milestoneId
+  //         ? {
+  //             ...m,
+  //             tasks: [
+  //               ...m.tasks,
+  //               {
+  //                 id: crypto.randomUUID(),
+  //                 title: newTaskTitle,
+  //                 assignedTo: "Ramlal",
+  //                 isCompleted: false,
+  //               },
+  //             ],
+  //           }
+  //         : m,
+  //     ),
+  //   );
+
+  //   setNewTaskTitle("");
+  //   setCreatingTasks(false);
+  // };
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
@@ -111,11 +143,10 @@ const ProjectDetails = () => {
 
           <div>
             <h1>Members</h1>
-            {project.members.map(e => {
-              <p>{e}</p>
+            {project.members.map((e) => {
+              <p>{e}</p>;
             })}
           </div>
-          
         </div>
 
         <div>
@@ -155,7 +186,10 @@ const ProjectDetails = () => {
                     className="border p-2 rounded"
                     onChange={(e) => setNewTaskTitle(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") handleCreateTask(m.id);
+                      if (e.key === "Enter") {
+                        // handleCreateTask(m.id);
+                        setActiveMilestoneId(m._id)
+                      }
                       if (e.key === "Escape") {
                         setCreatingTasks(false);
                         setNewTaskTitle("");
