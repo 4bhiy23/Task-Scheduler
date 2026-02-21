@@ -9,19 +9,14 @@ const taskSchema = new mongoose.Schema({
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    // required: true,
+    // default: ""
   },
 
   status: {
     type: String,
-    enum: ["TODO", "IN_PROGRESS", "DONE"],
-    default: "TODO"
-  },
-
-  priority: {
-    type: String,
-    enum: ["LOW", "MEDIUM", "HIGH"],
-    default: "MEDIUM"
+    enum: ["COMPLETED", "ONGOING", "PENDING"],
+    default: "PENDING"
   }
 }, { timestamps: true });
 
@@ -51,7 +46,7 @@ const projectSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    // required: true
   },
 
   members: [

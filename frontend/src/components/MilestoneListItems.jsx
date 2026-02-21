@@ -1,10 +1,10 @@
 import React from "react";
 
-const MilestoneListItems = ({ details }) => {
+const MilestoneListItems = ({ e }) => {
+  
   return (
     <div className="flex justify-between w-3xl bg-purple-400 px-4">
-      <p>{details.task}</p>
-      <p>{details.assignedTo}</p>
+      <p>{e}</p>
       <input type="checkbox" />
     </div>
   );

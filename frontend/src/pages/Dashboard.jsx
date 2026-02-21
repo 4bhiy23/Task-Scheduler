@@ -1,56 +1,30 @@
-import React from "react";
-import { Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import ProjectCard from "../components/ProjectCard";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
-  const projects = [
-    {
-      title: "Task Scheduler",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-    {
-      title: "Task Scheduler 2",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-    {
-      title: "Task Scheduler one more",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-    {
-      title: "Task Scheduler one more",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-    {
-      title: "Task Scheduler one more",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-    {
-      title: "Task Scheduler one more",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-    {
-      title: "Task Scheduler one more",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-    {
-      title: "Task Scheduler one more",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-    {
-      title: "Task Scheduler one more",
-      deadline: "Tomorrow",
-      status: "Ongoing",
-    },
-  ];
-  // const projects=[]
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/v1/projects",
+        );
+        setProjects(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  // useEffect(() => {
+  //   console.log(projects);
+  // }, [projects]);
+
   return (
     <div className="p-2">
       <div className="w-full h-screen">
@@ -62,11 +36,14 @@ const Dashboard = () => {
         ) : (
           <div className="w-full grid grid-cols-4 gap-4 place-items-center">
             {projects.map((e, idx) => (
-              <ProjectCard details={e} key={idx} />
+              <Link 
+                to={`/projects/${e._id}`}
+                state={{project: e}}
+              >
+                <ProjectCard details={e} key={idx} />
+              </Link>
             ))}
-            <div className="flex justify-center items-center w-xs h-full border-2 border-dashed">
-              <Plus />
-            </div>
+            <ProjectCard />
           </div>
         )}
       </div>
