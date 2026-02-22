@@ -1,34 +1,5 @@
 import mongoose from "mongoose";
 
-const taskSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true
-  },
-
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    // required: true,
-    // default: ""
-  },
-
-  status: {
-    type: String,
-    enum: ["COMPLETED", "ONGOING", "PENDING"],
-    default: "PENDING"
-  }
-}, { timestamps: true });
-
-const milestoneSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true
-  },
-
-  tasks: [taskSchema]
-});
-
 const projectSchema = new mongoose.Schema({
   title: String,
 
@@ -63,7 +34,12 @@ const projectSchema = new mongoose.Schema({
     }
   ],
 
-  milestones: [milestoneSchema]
+  milestones: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Milestones"
+    }
+  ]
 
 }, { timestamps: true });
 

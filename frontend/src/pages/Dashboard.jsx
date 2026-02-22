@@ -32,16 +32,18 @@ const Dashboard = () => {
 
         {/* Project Cards */}
         {projects.length === 0 ? (
-          <h1>No Projecs Found</h1>
+          <>
+            <h1>No Projecs Found</h1>
+            <ProjectCard />
+          </>
         ) : (
           <div className="w-full grid grid-cols-4 gap-4 place-items-center">
-            {projects.map((e, idx) => (
-              <Link 
-                to={`/projects/${e._id}`}
-                state={{project: e}}
-              >
-                <ProjectCard details={e} key={idx} />
-              </Link>
+            {projects.map((e) => (
+              <div key={e._id}>
+                <Link to={`/projects/${e._id}`} state={{ project: e }}>
+                  <ProjectCard details={e} key={e._id} />
+                </Link>
+              </div >
             ))}
             <ProjectCard />
           </div>

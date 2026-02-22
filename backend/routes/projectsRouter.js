@@ -1,5 +1,6 @@
 import express from "express";
 import { Project } from "../models/projectModel.js";
+import { Milestones } from "../models/milestoneModel.js";
 const router = express.Router()
 
 // Display all Projects
@@ -46,6 +47,31 @@ router.post("/", async (req, res) => {
     }
 })
 
+router.get("/:projectID/milestone", async (req, res) => {
+    try{
+        const project = await Project.findById({_id: req.params.projectID}).populate("milestones") 
+        // const project = await Project.findById({_id: req.params.projectID})
+        if(!project) return res.json({
+            success: false,
+            message: "Project not found"
+        })
+        
+        if(project.length === 0){
+            return res.json({
+                success: true,
+                message: "No milestones set"
+            })
+        }
+        
+        return res.json({
+            success: true,
+            res: project.milestones
+        })
+    } catch (err){
+        console.log("Error getting milestones: ", err)
+    }
+})
+
 router.post("/:projectId/milestone", async (req, res) => {
   try {
     const projectId = req.params.projectId;
@@ -59,14 +85,17 @@ router.post("/:projectId/milestone", async (req, res) => {
     });
     }
 
-    project.milestones.push({ title, tasks: [] });
+    const createdMilestone = await Milestones.create({
+        title
+    })
 
-    await project.save();
+    project.milestones.push(createdMilestone)
+    await project.save()
 
     return res.json({
-      success: true,
-      milestones: project.milestones
-    });
+        success: true,
+        message: "Milestone added successfully"
+    })
 
   } catch (error) {
     return res.json({ message: error.message });

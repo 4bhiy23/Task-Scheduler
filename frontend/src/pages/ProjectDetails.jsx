@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, use } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Circle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -20,107 +20,53 @@ const ProjectDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { project } = location.state ?? {};
+  // console.log(location)
+  const projectId = location.pathname.split("/")[2]
+  // console.log(projectId)
   // console.log(project);
 
+
+
   // Milestones State
-  const [milestones, setMilestones] = useState([])
+  const [milestones, setMilestones] = useState([]);
   const [creatingMilestone, setCreatingMilestone] = useState(false);
   const [newMilestoneTitle, setNewMilestoneTitle] = useState("");
   const inputRef = useRef(null);
-  
-  useEffect(()=>{
-    const fetchData = async () => {
-     try{
-       const data = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/projects/${project._id}`)
-       setMilestones(data.data.milestones)
-     }catch(err){
-       console.log("Terin ma ka bhosda",err)
-     }
-   }
-    fetchData()
-  },[])
-  
-  // Focus when input appears
-  useEffect(() => {
-    if (creatingMilestone) {
-      inputRef.current.focus();
-    }
-  }, [creatingMilestone]);
 
-  // Create milestone on Enter
-  const handleCreateMilestone = async () => {
-    if (!newMilestoneTitle.trim()) return;
-    const mile = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/projects/${project._id}/milestone`,
-      {
-        title: newMilestoneTitle,
-      },
-    );
-    console.log(mile.data.milestones)
-    setMilestones((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        title: newMilestoneTitle,
-        tasks: [],
-      },
-    ]);
-    setNewMilestoneTitle("");
-    setCreatingMilestone(false);
-    console.log(project);
-  };
-
-  
-
- 
-
-  // Add task with focus
-  const [creatingTasks, setCreatingTasks] = useState(false);
-  const [activeMilestoneId, setActiveMilestoneId] = useState(null);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const taskInputRef = useRef(null);
+  const [refresh, setRefresh] = useState(false)
 
   useEffect(() => {
-    if (creatingTasks) {
-      taskInputRef.current.focus();
+    const fetchMilestone = async () => {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/projects/${projectId}/milestone`)
+      // console.log(response.data)
+      setMilestones(response.data.res)
     }
-  }, [creatingTasks]);
+    fetchMilestone()
+  },[refresh])
 
-  // Add Task Logic
-  // const handleCreateTask = async (milestoneId) => {
-  //   if (!newTaskTitle.trim()) return;
-
-  //   await axios.post(
-  //     `${import.meta.env.VITE_BACKEND_URL}/projects/${project._id}/milestone/${milestoneId}/task`,
-  //     {
-  //       title: newTaskTitle,
-  //       assignedTo: "userId",
-  //     },
-  //   );
-
-  //   setMilestones((prev) =>
-  //     prev.map((m) =>
-  //       m.id === milestoneId
-  //         ? {
-  //             ...m,
-  //             tasks: [
-  //               ...m.tasks,
-  //               {
-  //                 id: crypto.randomUUID(),
-  //                 title: newTaskTitle,
-  //                 assignedTo: "Ramlal",
-  //                 isCompleted: false,
-  //               },
-  //             ],
-  //           }
-  //         : m,
-  //     ),
-  //   );
-
-  //   setNewTaskTitle("");
-  //   setCreatingTasks(false);
-  // };
-
+  useEffect(() => {
+    inputRef.current?.focus();
+  },[creatingMilestone])
+  
+  const addMilestone = async () => {
+    try{
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/projects/${projectId}/milestone`, {
+        title: newMilestoneTitle
+      })
+      
+      // console.log(res)
+      // if(!res.ok) return console.log("Error while making post request to milestone")
+      
+      setCreatingMilestone(false)
+      setNewMilestoneTitle("")
+      console.log("Milestone added")
+      setRefresh(e => !e)
+        
+    } catch (error) {
+      console.log("Error setting milestone:", error)
+    }
+  }
+  
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
       <button onClick={() => navigate(-1)}>← Back</button>
@@ -163,64 +109,27 @@ const ProjectDetails = () => {
 
           <div className="flex flex-col gap-4">
             {milestones.map((m) => (
-              <div key={m.id} className="border p-4 rounded">
+              <div key={m._id} className="border p-4 rounded">
                 <p className="font-semibold">{m.title}</p>
-
-                {m.tasks.map((task) => (
-                  <div key={task.id} className="flex w-full justify-between">
-                    <p>{task.title}</p>
-                    <p>{task.assignedTo}</p>
-                    <select>
-                      <option value="pending">PENDING</option>
-                      <option value="ongoing">ONGOING</option>
-                      <option value="completed">COMPLETED</option>
-                    </select>
-                  </div>
-                ))}
-                {creatingTasks && (
-                  <input
-                    ref={taskInputRef}
-                    type="text"
-                    value={newTaskTitle}
-                    placeholder="Enter Task"
-                    className="border p-2 rounded"
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        // handleCreateTask(m.id);
-                        setActiveMilestoneId(m._id)
-                      }
-                      if (e.key === "Escape") {
-                        setCreatingTasks(false);
-                        setNewTaskTitle("");
-                      }
-                    }}
-                  />
-                )}
-
-                <button
-                  className="text-sm text-blue-500 mt-2"
-                  onClick={() => setCreatingTasks(true)}
-                >
-                  Add Task
-                </button>
               </div>
             ))}
-
-            {/* Input appears when creatingMilestone is true */}
             {creatingMilestone && (
-              <input
+              <input 
                 ref={inputRef}
-                type="text"
                 value={newMilestoneTitle}
-                placeholder="Enter milestone title"
-                className="border p-2 rounded"
-                onChange={(e) => setNewMilestoneTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleCreateMilestone();
-                  if (e.key === "Escape") {
-                    setCreatingMilestone(false);
-                    setNewMilestoneTitle("");
+                placeholder="Set your next milestone"
+                onChange={(e) => {
+                  setNewMilestoneTitle(e.target.value)
+                }}
+                onKeyDown={e => {
+                  if(e.key == 'Enter'){
+                    inputRef.current.focus()
+                    addMilestone()
+                  }
+
+                  if(e.key == 'Escape'){
+                    setNewMilestoneTitle("")
+                    setCreatingMilestone(false)
                   }
                 }}
               />
