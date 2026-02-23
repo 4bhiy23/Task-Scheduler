@@ -1,6 +1,7 @@
 import axios from "axios";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 const CreateProject = () => {
   const {
@@ -10,6 +11,7 @@ const CreateProject = () => {
     formState: { errors },
   } = useForm();
 
+  const navigate = useNavigate()
   const onSubmit = async (data) => {
     // console.log(data);
     try{
@@ -90,6 +92,9 @@ const CreateProject = () => {
       <button
         type="submit"
         className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
+        onClick={() => {
+          navigate("/dashboard")
+        }}
       >
         Create Project
       </button>

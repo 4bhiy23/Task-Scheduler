@@ -48,91 +48,71 @@ router.post("/", async (req, res) => {
 })
 
 router.get("/:projectID/milestone", async (req, res) => {
-    try{
-        const project = await Project.findById({_id: req.params.projectID}).populate("milestones") 
+    try {
+        const project = await Project.findById({ _id: req.params.projectID }).populate("milestones")
         // const project = await Project.findById({_id: req.params.projectID})
-        if(!project) return res.json({
+        if (!project) return res.json({
             success: false,
             message: "Project not found"
         })
-        
-        if(project.length === 0){
+
+        if (project.length === 0) {
             return res.json({
                 success: true,
                 message: "No milestones set"
             })
         }
-        
+
         return res.json({
             success: true,
             res: project.milestones
         })
-    } catch (err){
+    } catch (err) {
         console.log("Error getting milestones: ", err)
     }
 })
 
 router.post("/:projectId/milestone", async (req, res) => {
-  try {
-    const projectId = req.params.projectId;
-    const {title} = req.body;
+    try {
+        const projectId = req.params.projectId;
+        const { title } = req.body;
 
-    const project = await Project.findById(projectId);
-    if (!project) {
-      return res.json({
-        success: true,
-        message: "Project not found"
-    });
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.json({
+                success: true,
+                message: "Project not found"
+            });
+        }
+
+        const createdMilestone = await Milestones.create({
+            title
+        })
+
+        project.milestones.push(createdMilestone)
+        await project.save()
+
+        return res.json({
+            success: true,
+            message: "Milestone added successfully"
+        })
+
+    } catch (error) {
+        return res.json({ message: error.message });
     }
+});
 
-    const createdMilestone = await Milestones.create({
-        title
-    })
-
-    project.milestones.push(createdMilestone)
-    await project.save()
+router.delete("/:projectId/milestone/:milestoneId", async (req, res) => {
+    await Milestones.findByIdAndDelete(req.params.milestoneId)
+    await Project.findByIdAndUpdate(
+        req.params.projectId,
+        { $pull: { milestones: req.params.milestoneId } }
+    );
 
     return res.json({
         success: true,
-        message: "Milestone added successfully"
+        message: "Milestone deleted TwT"
     })
-
-  } catch (error) {
-    return res.json({ message: error.message });
-  }
-});
-
-router.post("/:projectId/milestone/:milestoneId/task", async (req, res) => {
-  try {
-    const { projectId, milestoneId } = req.params;
-    const { title, assignedTo } = req.body;
-
-    const project = await Project.findById(projectId);
-    if (!project) {
-      return res.json({ message: "Project not found" });
-    }
-
-    const milestone = project.milestones.id(milestoneId);
-    if (!milestone) {
-      return res.json({ message: "Milestone not found" });
-    }
-
-    milestone.tasks.push({
-      title,
-      assignedTo,
-      status: "PENDING"
-    });
-
-    await project.save();
-
-    return res.json({
-      success: true,
-      tasks: milestone.tasks
-    });
-
-  } catch (error) {
-    return res.json({ message: error.message });
-  }
-});
+})
 
 export default router

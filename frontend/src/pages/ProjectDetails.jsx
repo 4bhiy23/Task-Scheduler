@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Circle } from "lucide-react";
+import { Circle, DeleteIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -25,16 +25,20 @@ const ProjectDetails = () => {
   // console.log(projectId)
   // console.log(project);
 
-
-
+  const deleteMilestone = async (milestoneId) => {
+    await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/projects/${projectId}/milestone/${milestoneId}`)
+  }
+  
+  
+  
   // Milestones State
   const [milestones, setMilestones] = useState([]);
   const [creatingMilestone, setCreatingMilestone] = useState(false);
   const [newMilestoneTitle, setNewMilestoneTitle] = useState("");
   const inputRef = useRef(null);
-
+  
   const [refresh, setRefresh] = useState(false)
-
+  
   useEffect(() => {
     const fetchMilestone = async () => {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/projects/${projectId}/milestone`)
@@ -43,7 +47,7 @@ const ProjectDetails = () => {
     }
     fetchMilestone()
   },[refresh])
-
+  
   useEffect(() => {
     inputRef.current?.focus();
   },[creatingMilestone])
@@ -61,7 +65,7 @@ const ProjectDetails = () => {
       setNewMilestoneTitle("")
       console.log("Milestone added")
       setRefresh(e => !e)
-        
+      
     } catch (error) {
       console.log("Error setting milestone:", error)
     }
@@ -111,6 +115,14 @@ const ProjectDetails = () => {
             {milestones.map((m) => (
               <div key={m._id} className="border p-4 rounded">
                 <p className="font-semibold">{m.title}</p>
+                <button
+                  onClick={() => {
+                    deleteMilestone(m._id)
+                    setRefresh(e => !e)
+                  }}
+                >
+                  <DeleteIcon />
+                </button>
               </div>
             ))}
             {creatingMilestone && (
@@ -137,7 +149,9 @@ const ProjectDetails = () => {
 
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded"
-              onClick={() => setCreatingMilestone(true)}
+              onClick={() => {
+                setCreatingMilestone(true)
+              }}
             >
               Add Milestone
             </button>
